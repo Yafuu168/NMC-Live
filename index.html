@@ -36,16 +36,8 @@
     var SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
     var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
 
-    // 2. 修正點：使用正確的物件名稱建立連線 (supabase.createClient 而不是 supabasejs)
-    // 我們使用 try-catch 來確保連線順利
-    var client;
-    try {
-        client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch (e) {
-        console.error("初始化失敗，嘗試使用替代方案...");
-        // 某些版本可能需要使用 window.supabase
-        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
+    // 2. 建立連線物件，命名為 nmc_client 以避免與全域 supabase 衝突
+    var nmc_client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     var urlParams = new URLSearchParams(window.location.search);
     var gameId = urlParams.get('game_id');
@@ -56,12 +48,12 @@
             return;
         }
         
-        // 呼叫資料庫函數 (使用剛剛建立的 client)
-        var { data, error } = await client.rpc('get_nmc_scoreboard', { target_game_id: gameId });
+        // 呼叫 RPC 函數
+        var { data, error } = await nmc_client.rpc('get_nmc_scoreboard', { target_game_id: gameId });
         
         if (error) {
             console.error('RPC Error:', error);
-            document.getElementById('status').innerText = '權限或連線問題：' + error.message;
+            document.getElementById('status').innerText = '讀取失敗：' + error.message;
             return;
         }
 
@@ -92,9 +84,9 @@
         }).join('');
     }
 
-    // 啟動監聽與載入
+    // 3. 啟動即時監聽與初次載入
     if (gameId) {
-        client
+        nmc_client
             .channel('score-changes')
             .on('postgres_changes', { 
                 event: '*', 
@@ -102,6 +94,7 @@
                 table: 'nmc_plate_appearances',
                 filter: 'game_id=eq.' + gameId
             }, function() {
+                console.log('數據變動，重新抓取分數...');
                 loadScoreboard();
             })
             .subscribe();

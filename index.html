@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>NMC 大數盃即時計分板</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #1a1a1a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .scoreboard { border: 2px solid #444; border-collapse: collapse; background: #222; width: 100%; max-width: 800px; }
+        .scoreboard th, .scoreboard td { border: 1px solid #444; padding: 12px; text-align: center; }
+        .scoreboard th { background: #333; color: #888; font-size: 0.8em; }
+        .team-name { text-align: left; font-weight: bold; width: 150px; }
+        .score-r { color: #f1c40f; font-weight: bold; }
+        .status-bar { margin-bottom: 10px; font-size: 0.9em; padding: 5px 15px; border-radius: 15px; background: #444; }
+        .live { background: #27ae60; animation: blink 2s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="status" class="status-bar">初始化中...</div>
+    <h2 id="title">大數盃賽事直播</h2>
+
+    <table class="scoreboard">
+        <thead>
+            <tr>
+                <th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>R</th><th>H</th><th>E</th>
+            </tr>
+        </thead>
+        <tbody id="board-body">
+            </tbody>
+    </table>
+
+    <script>
+        // --- 填入你的資料 ---
+        const SUPABASE_URL = 'https://你的專案ID.supabase.co';
+        const SUPABASE_KEY = '你的ANON_KEY';
+        // ------------------
+
+        const supabase = supabasejs.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('game_id');
+
+        async function loadScoreboard() {
+            if (!gameId) {
+                document.getElementById('status').innerText = '錯誤：網址未帶 game_id';
+                return;
+            }
+
+            const { data, error } = await supabase.rpc('get_nmc_scoreboard', { target_game_id: gameId });
+            if (data) {
+                renderBoard(data);
+                document.getElementById('status').innerText = '● LIVE 即時連線中';
+                document.getElementById('status').className = 'status-bar live';
+            }
+        }
+
+        function renderBoard(data) {
+            const body = document.getElementById('board-body');
+            body.innerHTML = data.map(row => `
+                <tr>
+                    <td class="team-name">${row.team_name}</td>
+                    <td>${row.i1}</td><td>${row.i2}</td><td>${row.i3}</td><td>${row.i4}</td>
+                    <td>${row.i5}</td><td>${row.i6}</td><td>${row.i7}</td><td>${row.i8}</td><td>${row.i9}</td>
+                    <td class="score-r">${row.total_r}</td><td>${row.total_h}</td><td>${row.total_e}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 開啟即時監聽
+        if (gameId) {
+            supabase
+                .channel('score-changes')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'nmc_plate_appearances',
+                    filter: `game_id=eq.${gameId}` 
+                }, () => {
+                    console.log('接收到得分變動訊號！');
+                    loadScoreboard();
+                })
+                .subscribe();
+
+            loadScoreboard();
+        }
+    </script>
+</body>
+</html>

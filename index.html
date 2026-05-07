@@ -32,58 +32,56 @@
     </table>
 
     <script>
-        // --- 填入你的資料 ---
-        const SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
-        // ------------------
+    const SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
 
-        const supabase = supabasejs.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const urlParams = new URLSearchParams(window.location.search);
-        const gameId = urlParams.get('game_id');
+    // 解決重複宣告的問題
+    var supabase = supabasejs.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function loadScoreboard() {
-            if (!gameId) {
-                document.getElementById('status').innerText = '錯誤：網址未帶 game_id';
-                return;
-            }
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameId = urlParams.get('game_id');
 
-            const { data, error } = await supabase.rpc('get_nmc_scoreboard', { target_game_id: gameId });
-            if (data) {
-                renderBoard(data);
-                document.getElementById('status').innerText = '● LIVE 即時連線中';
-                document.getElementById('status').className = 'status-bar live';
-            }
+    async function loadScoreboard() {
+        if (!gameId) {
+            document.getElementById('status').innerText = '錯誤：網址未帶 game_id';
+            return;
         }
-
-        function renderBoard(data) {
-            const body = document.getElementById('board-body');
-            body.innerHTML = data.map(row => `
-                <tr>
-                    <td class="team-name">${row.team_name}</td>
-                    <td>${row.i1}</td><td>${row.i2}</td><td>${row.i3}</td><td>${row.i4}</td>
-                    <td>${row.i5}</td><td>${row.i6}</td><td>${row.i7}</td><td>${row.i8}</td><td>${row.i9}</td>
-                    <td class="score-r">${row.total_r}</td><td>${row.total_h}</td><td>${row.total_e}</td>
-                </tr>
-            `).join('');
+        const { data, error } = await supabase.rpc('get_nmc_scoreboard', { target_game_id: gameId });
+        if (data) {
+            renderBoard(data);
+            document.getElementById('status').innerText = '● LIVE 即時連線中';
+            document.getElementById('status').className = 'status-bar live';
         }
+    }
 
-        // 開啟即時監聽
-        if (gameId) {
-            supabase
-                .channel('score-changes')
-                .on('postgres_changes', { 
-                    event: '*', 
-                    schema: 'public', 
-                    table: 'nmc_plate_appearances',
-                    filter: `game_id=eq.${gameId}` 
-                }, () => {
-                    console.log('接收到得分變動訊號！');
-                    loadScoreboard();
-                })
-                .subscribe();
+    function renderBoard(data) {
+        const body = document.getElementById('board-body');
+        body.innerHTML = data.map(row => `
+            <tr>
+                <td class="team-name">${row.team_name}</td>
+                <td>${row.i1}</td><td>${row.i2}</td><td>${row.i3}</td><td>${row.i4}</td>
+                <td>${row.i5}</td><td>${row.i6}</td><td>${row.i7}</td><td>${row.i8}</td><td>${row.i9}</td>
+                <td class="score-r">${row.total_r}</td><td>${row.total_h}</td><td>${row.total_e}</td>
+            </tr>
+        `).join('');
+    }
 
-            loadScoreboard();
-        }
-    </script>
+    if (gameId) {
+        supabase
+            .channel('score-changes')
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'nmc_plate_appearances',
+                filter: `game_id=eq.${gameId}` 
+            }, () => {
+                loadScoreboard();
+            })
+            .subscribe();
+
+        loadScoreboard();
+    }
+</script>
+    
 </body>
 </html>

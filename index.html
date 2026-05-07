@@ -6,6 +6,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1a1a1a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .info-card { background: #333; padding: 15px; border-radius: 10px; width: 100%; max-width: 800px; margin-bottom: 20px; border-left: 5px solid #f1c40f; }
+        .info-card h2 { margin: 0 0 10px 0; color: #f1c40f; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em; color: #ccc; }
         .scoreboard { border: 2px solid #444; border-collapse: collapse; background: #222; width: 100%; max-width: 800px; }
         .scoreboard th, .scoreboard td { border: 1px solid #444; padding: 12px; text-align: center; }
         .scoreboard th { background: #333; color: #888; font-size: 0.8em; }
@@ -17,9 +20,17 @@
     </style>
 </head>
 <body>
-
     <div id="status" class="status-bar">初始化中...</div>
-    <h2 id="title">大數盃賽事直播</h2>
+    
+    <div class="info-card">
+        <h2 id="display-title">大數盃賽事直播</h2>
+        <div class="info-grid">
+            <div>📍 場地：<span id="display-location">--</span></div>
+            <div>📅 日期：<span id="display-date">--</span></div>
+            <div>🔢 場次：<span id="display-match">--</span></div>
+            <div>⚾ 攻守：<span id="display-order">先攻 vs 後守</span></div>
+        </div>
+    </div>
 
     <table class="scoreboard">
         <thead>
@@ -27,81 +38,65 @@
                 <th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>R</th><th>H</th><th>E</th>
             </tr>
         </thead>
-        <tbody id="board-body">
-            </tbody>
+        <tbody id="board-body"></tbody>
     </table>
 
-<script>
-    // 1. 設定基礎資料
-    var SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
+    <script>
+        var SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
+        var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
 
-    // 2. 建立連線物件，命名為 nmc_client 以避免與全域 supabase 衝突
-    var nmc_client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        var nmc_client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        var urlParams = new URLSearchParams(window.location.search);
+        var gameId = urlParams.get('game_id');
 
-    var urlParams = new URLSearchParams(window.location.search);
-    var gameId = urlParams.get('game_id');
+        async function loadGameInfo() {
+            // 從 nmc_games 表格撈取基本資訊
+            var { data, error } = await nmc_client
+                .from('nmc_games')
+                .select('game_date, location, match_number')
+                .eq('id', gameId)
+                .single();
 
-    async function loadScoreboard() {
-        if (!gameId) {
-            document.getElementById('status').innerText = '錯誤：網址未帶 game_id';
-            return;
+            if (data) {
+                var dateObj = new Date(data.game_date);
+                var year = dateObj.getFullYear();
+                document.getElementById('display-title').innerText = year + ' 年大數盃賽事直播';
+                document.getElementById('display-date').innerText = data.game_date;
+                document.getElementById('display-location').innerText = data.location;
+                document.getElementById('display-match').innerText = '第 ' + data.match_number + ' 場';
+            }
         }
-        
-        // 呼叫 RPC 函數
-        var { data, error } = await nmc_client.rpc('get_nmc_scoreboard', { target_game_id: gameId });
-        
-        if (error) {
-            console.error('RPC Error:', error);
-            document.getElementById('status').innerText = '讀取失敗：' + error.message;
-            return;
+
+        async function loadScoreboard() {
+            if (!gameId) return;
+            var { data, error } = await nmc_client.rpc('get_nmc_scoreboard', { target_game_id: gameId });
+            if (data && data.length >= 2) {
+                renderBoard(data);
+                // 顯示攻守順序 (第一列通常是先攻，第二列是後守)
+                document.getElementById('display-order').innerText = data[0].team_name + '(先) vs ' + data[1].team_name + '(後)';
+                document.getElementById('status').innerText = '● LIVE 即時連線中';
+                document.getElementById('status').className = 'status-bar live';
+            }
         }
 
-        if (data) {
-            renderBoard(data);
-            document.getElementById('status').innerText = '● LIVE 即時連線中';
-            document.getElementById('status').className = 'status-bar live';
+        function renderBoard(data) {
+            var body = document.getElementById('board-body');
+            body.innerHTML = data.map(function(row) {
+                return '<tr>' +
+                    '<td class="team-name">' + row.team_name + '</td>' +
+                    '<td>' + row.i1 + '</td><td>' + row.i2 + '</td><td>' + row.i3 + '</td>' +
+                    '<td>' + row.i4 + '</td><td>' + row.i5 + '</td><td>' + row.i6 + '</td>' +
+                    '<td>' + row.i7 + '</td><td>' + row.i8 + '</td><td>' + row.i9 + '</td>' +
+                    '<td class="score-r">' + row.total_r + '</td><td>' + row.total_h + '</td><td>' + row.total_e + '</td>' +
+                '</tr>';
+            }).join('');
         }
-    }
 
-    function renderBoard(data) {
-        var body = document.getElementById('board-body');
-        if (!data || data.length === 0) {
-            body.innerHTML = '<tr><td colspan="13">目前尚無比賽數據</td></tr>';
-            return;
+        if (gameId) {
+            loadGameInfo();
+            loadScoreboard();
+            nmc_client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'nmc_plate_appearances', filter: 'game_id=eq.' + gameId }, loadScoreboard).subscribe();
         }
-        
-        body.innerHTML = data.map(function(row) {
-            return '<tr>' +
-                '<td class="team-name">' + row.team_name + '</td>' +
-                '<td>' + row.i1 + '</td><td>' + row.i2 + '</td><td>' + row.i3 + '</td>' +
-                '<td>' + row.i4 + '</td><td>' + row.i5 + '</td><td>' + row.i6 + '</td>' +
-                '<td>' + row.i7 + '</td><td>' + row.i8 + '</td><td>' + row.i9 + '</td>' +
-                '<td class="score-r">' + row.total_r + '</td>' +
-                '<td>' + row.total_h + '</td>' +
-                '<td>' + row.total_e + '</td>' +
-            '</tr>';
-        }).join('');
-    }
-
-    // 3. 啟動即時監聽與初次載入
-    if (gameId) {
-        nmc_client
-            .channel('score-changes')
-            .on('postgres_changes', { 
-                event: '*', 
-                schema: 'public', 
-                table: 'nmc_plate_appearances',
-                filter: 'game_id=eq.' + gameId
-            }, function() {
-                console.log('數據變動，重新抓取分數...');
-                loadScoreboard();
-            })
-            .subscribe();
-
-        loadScoreboard();
-    }
-</script>
-    
+    </script>
 </body>
 </html>

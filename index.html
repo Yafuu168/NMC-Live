@@ -36,9 +36,15 @@
     var SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
     var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
 
-    // 2. 解決重複宣告問題：如果已經有 supabase 就用現成的，沒有就建立
-    if (typeof supabase === 'undefined') {
-        var supabase = supabasejs.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 2. 修正點：使用正確的物件名稱建立連線 (supabase.createClient 而不是 supabasejs)
+    // 我們使用 try-catch 來確保連線順利
+    var client;
+    try {
+        client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch (e) {
+        console.error("初始化失敗，嘗試使用替代方案...");
+        // 某些版本可能需要使用 window.supabase
+        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     var urlParams = new URLSearchParams(window.location.search);
@@ -50,12 +56,12 @@
             return;
         }
         
-        // 呼叫資料庫函數
-        var { data, error } = await supabase.rpc('get_nmc_scoreboard', { target_game_id: gameId });
+        // 呼叫資料庫函數 (使用剛剛建立的 client)
+        var { data, error } = await client.rpc('get_nmc_scoreboard', { target_game_id: gameId });
         
         if (error) {
             console.error('RPC Error:', error);
-            document.getElementById('status').innerText = '讀取失敗：' + error.message;
+            document.getElementById('status').innerText = '權限或連線問題：' + error.message;
             return;
         }
 
@@ -88,7 +94,7 @@
 
     // 啟動監聽與載入
     if (gameId) {
-        supabase
+        client
             .channel('score-changes')
             .on('postgres_changes', { 
                 event: '*', 
@@ -96,7 +102,6 @@
                 table: 'nmc_plate_appearances',
                 filter: 'game_id=eq.' + gameId
             }, function() {
-                console.log('偵測到得分變動！');
                 loadScoreboard();
             })
             .subscribe();

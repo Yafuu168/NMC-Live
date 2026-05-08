@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大數盃賽事資訊系統 - NMC Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --accent: #27ae60; --danger: #e74c3c; }
+        body { background: var(--bg); color: white; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; line-height: 1.6; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 600px; width: 100%; }
+        
+        /* 1. 介紹區 (Wiki Style) */
+        .wiki-section { background: var(--card); border-left: 5px solid var(--primary); padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+        .wiki-section h1 { margin: 0 0 10px 0; color: var(--primary); font-size: 1.8em; }
+        .wiki-section p { font-size: 0.9em; color: #ccc; margin: 0; }
+        .wiki-link { display: inline-block; margin-top: 10px; color: var(--primary); text-decoration: none; font-size: 0.8em; border-bottom: 1px solid var(--primary); }
+
+        /* 2. 傳承牆 (14校輪值) */
+        .heritage-section { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 25px; font-size: 0.85em; }
+        .heritage-title { color: var(--primary); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; }
+        .heritage-title::before { content: "📜"; margin-right: 8px; }
+        .region-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .region-box { background: #222; padding: 10px; border-radius: 5px; border-top: 3px solid #444; }
+        .region-north { border-top-color: #3498db; }
+        .region-central { border-top-color: #e67e22; }
+        .region-south { border-top-color: #27ae60; }
+        .region-box h4 { margin: 0 0 5px 0; font-size: 0.85em; text-align: center; color: #eee; }
+        .school-list { list-style: none; padding: 0; margin: 0; font-size: 0.75em; color: #888; }
+        .school-list li { margin-bottom: 2px; padding-left: 5px; border-left: 2px solid #333; }
+
+        /* 3. 賽事選擇器 */
+        .selector-box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #333; }
+        .label { font-size: 0.8em; color: #888; font-weight: bold; margin-bottom: 8px; display: block; }
+        select { width: 100%; padding: 12px; border-radius: 8px; background: #333; color: white; border: 1px solid #444; font-size: 1em; margin-bottom: 15px; outline: none; }
+        .game-meta { background: #1a1a1a; padding: 15px; border-radius: 8px; font-size: 0.85em; border: 1px dashed #444; }
+        .meta-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .meta-val { color: var(--primary); font-weight: bold; }
+
+        /* 4. 入口分流區 */
+        .section-tag { font-size: 0.75em; color: #666; margin: 20px 0 10px 5px; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 1px; }
+        .section-tag::after { content: ""; flex: 1; height: 1px; background: #333; margin-left: 10px; }
+        .nav-grid { display: grid; grid-template-columns: 1fr; gap: 10px; display: none; }
+        .nav-btn { display: flex; align-items: center; background: #2a2a2a; padding: 18px; border-radius: 12px; text-decoration: none; color: white; transition: 0.2s; border-left: 6px solid #444; }
+        .nav-btn:active { transform: scale(0.98); background: #333; }
+        .btn-viewer { border-left-color: var(--primary); }
+        .btn-admin { border-left-color: var(--danger); background: #2d1f1f; }
+        .nav-btn b { display: block; font-size: 1.1em; }
+        .nav-btn span { font-size: 0.8em; color: #777; }
+
+        .footer { text-align: center; font-size: 0.7em; color: #444; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="wiki-section">
+        <h1>大數盃 (NMC)</h1>
+        <p>全名「全國大專院校數學相關系所盃賽」。起源於 1980 年代，是由全國各大學數學、應數、統計系共同參與的年度大型體育聯賽。</p>
+        <a href="https://zh.wikipedia.org/wiki/%E5%A4%A7%E6%95%B8%E7%9B%83" target="_blank" class="wiki-link">閱讀維基百科條目 ↗</a>
+    </div>
+
+    <div class="heritage-section">
+        <div class="heritage-title">14 校輪值守則 (傳承名單)</div>
+        <div class="region-group">
+            <div class="region-box region-north">
+                <h4>北區 (5)</h4>
+                <ul class="school-list">
+                    <li>中央 + 中原</li><li>清大 + 交大</li><li>台大</li><li>師大</li><li>輔大</li>
+                </ul>
+            </div>
+            <div class="region-box region-central">
+                <h4>中區 (4)</h4>
+                <ul class="school-list">
+                    <li>東海</li><li>中興</li><li>逢甲</li><li>靜宜</li>
+                </ul>
+            </div>
+            <div class="region-box region-south">
+                <h4>南區 (5)</h4>
+                <ul class="school-list">
+                    <li>東華 + 花師</li><li>中山</li><li>義守</li><li>中正</li><li>成大</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="selector-box">
+        <span class="label">📅 選擇賽事場次</span>
+        <select id="game-select" onchange="handleSelection()">
+            <option value="">-- 請選擇比賽 --</option>
+        </select>
+
+        <div id="meta-display" class="game-meta" style="display:none;">
+            <div class="meta-item"><span>主辦學校：</span><span class="meta-val" id="meta-host">--</span></div>
+            <div class="meta-item"><span>比賽地點：</span><span class="meta-val" id="meta-loc">--</span></div>
+            <div class="meta-item"><span>比賽日期：</span><span class="meta-val" id="meta-date">--</span></div>
+        </div>
+    </div>
+
+    <div id="viewer-nav" class="nav-grid">
+        <div class="section-tag">瀏覽者 (Viewer)</div>
+        <a href="#" onclick="go('live-board.html')" class="nav-btn btn-viewer"><div><b>📺 即時戰報直播</b><span>計分板與局數比分</span></div></a>
+        <a href="#" onclick="go('matrix-score.html')" class="nav-btn btn-viewer"><div><b>📊 打擊表現矩陣</b><span>各棒次詳細成績</span></div></a>
+        <a href="#" onclick="go('standings.html')" class="nav-btn btn-viewer"><div><b>🏆 盃賽戰績排名</b><span>小組積分與勝率</span></div></a>
+        
+        <div class="section-tag">紀錄組 (Admin)</div>
+        <a href="#" onclick="go('admin-input.html')" class="nav-btn btn-admin"><div><b>✍️ 現場紀錄控制台</b><span>數據錄入與即時同步</span></div></a>
+    </div>
+
+    <div class="footer">NMC Data Engine © 2026<br>14年輪一次，是榮譽也是義務。</div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    let gamesCache = [];
+
+    async function loadGames() {
+        const { data } = await client.from('nmc_games').select('*').order('game_date', { ascending: false });
+        if (data) {
+            gamesCache = data;
+            const sel = document.getElementById('game-select');
+            data.forEach(g => {
+                const year = new Date(g.game_date).getFullYear();
+                sel.innerHTML += `<option value="${g.id}">${year}年 - 場次 ${g.match_number || ''}: ${g.location}</option>`;
+            });
+        }
+    }
+
+    function handleSelection() {
+        const id = document.getElementById('game-select').value;
+        const meta = document.getElementById('meta-display');
+        const nav = document.getElementById('viewer-nav');
+
+        if (id) {
+            const g = gamesCache.find(x => x.id === id);
+            document.getElementById('meta-host').innerText = g.host_school || "待確認";
+            document.getElementById('meta-loc').innerText = g.location;
+            document.getElementById('meta-date').innerText = new Date(g.game_date).toLocaleDateString();
+            meta.style.display = 'block';
+            nav.style.display = 'grid';
+        } else {
+            meta.style.display = 'none';
+            nav.style.display = 'none';
+        }
+    }
+
+    function go(page) {
+        const id = document.getElementById('game-select').value;
+        window.location.href = `${page}?game_id=${id}`;
+    }
+
+    loadGames();
+</script>
+</body>
+</html>

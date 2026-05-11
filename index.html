@@ -32,8 +32,8 @@
         /* 3. 賽事選擇器 */
         .selector-box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #333; }
         .label { font-size: 0.8em; color: #888; font-weight: bold; margin-bottom: 8px; display: block; }
-        select { width: 100%; padding: 12px; border-radius: 8px; background: #333; color: white; border: 1px solid #444; font-size: 1em; margin-bottom: 15px; outline: none; }
-        .game-meta { background: #1a1a1a; padding: 15px; border-radius: 8px; font-size: 0.85em; border: 1px dashed #444; }
+        select { width: 100%; padding: 12px; border-radius: 8px; background: #333; color: white; border: 1px solid #444; font-size: 1.1em; margin-bottom: 15px; outline: none; appearance: none; }
+        .game-meta { background: #1a1a1a; padding: 15px; border-radius: 8px; font-size: 0.85em; border: 1px dashed #444; display: none; }
         .meta-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .meta-val { color: var(--primary); font-weight: bold; }
 
@@ -48,15 +48,15 @@
         .nav-btn b { display: block; font-size: 1.1em; }
         .nav-btn span { font-size: 0.8em; color: #777; }
 
-        .footer { text-align: center; font-size: 0.7em; color: #444; margin-top: 50px; }
+        .footer { text-align: center; font-size: 0.75em; color: #444; margin-top: 50px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="wiki-section">
-        <h1>大數盃壘球經典賽-Live</h1>
-        <p>全名「全國大專院校數學相關系所盃賽 - 慢速壘球項目」。大數盃是數學系學子的年度體育盛事，而慢壘更是其中具備高度團隊精神與策略性的核心賽事。本系統專用於錄入與展示慢壘賽事之即時數據。</p>
+        <h1>大數盃慢壘經典賽-Live</h1>
+        <p>「全國大專院校數學相關系所盃賽 - 慢速壘球項目」。大數盃是數學系學子的年度體育盛事，本系統專門針對慢壘賽事設計，提供即時比分與打擊統計數據。</p>
         <a href="https://zh.wikipedia.org/wiki/%E5%A4%A7%E6%95%B8%E7%9B%83" target="_blank" class="wiki-link">了解大數盃歷史 ↗</a>
     </div>
 
@@ -85,26 +85,26 @@
     </div>
 
     <div class="selector-box">
-    <span class="label">🥎 選擇壘球賽事場次</span>
+        <span class="label">🥎 選擇慢壘年度/場次</span>
         <select id="game-select" onchange="handleSelection()">
-            <option value="">-- 請選擇壘球比賽 --</option>
+            <option value="">載入數據中...</option>
         </select>
 
-        <div id="meta-display" class="game-meta" style="display:none;">
-            <div class="meta-item"><span>主辦學校：</span><span class="meta-val" id="meta-host">--</span></div>
-            <div class="meta-item"><span>比賽地點：</span><span class="meta-val" id="meta-loc">--</span></div>
-            <div class="meta-item"><span>比賽日期：</span><span class="meta-val" id="meta-date">--</span></div>
+        <div id="meta-display" class="game-meta">
+            <div class="meta-item"><span>主辦單位：</span><span class="meta-val" id="meta-host">--</span></div>
+            <div class="meta-item"><span>場地資訊：</span><span class="meta-val" id="meta-loc">--</span></div>
+            <div class="meta-item"><span>開賽日期：</span><span class="meta-val" id="meta-date">--</span></div>
         </div>
     </div>
 
     <div id="viewer-nav" class="nav-grid">
-        <div class="section-tag">瀏覽者 (Viewer)</div>
-        <a href="#" onclick="go('live-board.html')" class="nav-btn btn-viewer"><div><b>📺 即時戰報直播</b><span>計分板與局數比分</span></div></a>
-        <a href="#" onclick="go('matrix-score.html')" class="nav-btn btn-viewer"><div><b>📊 打擊表現矩陣</b><span>各棒次詳細成績</span></div></a>
-        <a href="#" onclick="go('standings.html')" class="nav-btn btn-viewer"><div><b>🏆 盃賽戰績排名</b><span>小組積分與勝率</span></div></a>
+        <div class="section-tag">瀏覽者專區 (Viewer)</div>
+        <a href="#" onclick="go('live-board.html')" class="nav-btn btn-viewer"><div><b>📺 即時戰報直播</b><span>計分板與局數比分連線</span></div></a>
+        <a href="#" onclick="go('matrix-score.html')" class="nav-btn btn-viewer"><div><b>📊 打擊表現矩陣</b><span>各棒次詳細攻守成績</span></div></a>
+        <a href="#" onclick="go('standings.html')" class="nav-btn btn-viewer"><div><b>🏆 盃賽戰績排名</b><span>掌握小組積分與勝率</span></div></a>
         
-        <div class="section-tag">紀錄組 (Admin)</div>
-        <a href="#" onclick="go('admin-input.html')" class="nav-btn btn-admin"><div><b>✍️ 現場紀錄控制台</b><span>數據錄入與即時同步</span></div></a>
+        <div class="section-tag">工作組專區 (Admin)</div>
+        <a href="#" onclick="go('admin-input.html')" class="nav-btn btn-admin"><div><b>✍️ 現場紀錄控制台</b><span>錄入比賽數據並即時同步</span></div></a>
     </div>
 
     <div class="footer">NMC Data Engine © 2026<br>14年輪一次，是榮譽也是義務。</div>
@@ -118,13 +118,15 @@
     let gamesCache = [];
 
     async function loadGames() {
+        // 從資料庫抓取資料，按日期逆向排序 (DESC)
         const { data } = await client.from('nmc_games').select('*').order('game_date', { ascending: false });
         if (data) {
             gamesCache = data;
             const sel = document.getElementById('game-select');
+            sel.innerHTML = '<option value="">-- 請選擇年份場次 --</option>';
             data.forEach(g => {
                 const year = new Date(g.game_date).getFullYear();
-                sel.innerHTML += `<option value="${g.id}">${year}年 - 場次 ${g.match_number || ''}: ${g.location}</option>`;
+                sel.innerHTML += `<option value="${g.id}">${year}年 - 場次 ${g.match_number || '?'}: ${g.location}</option>`;
             });
         }
     }
@@ -136,9 +138,10 @@
 
         if (id) {
             const g = gamesCache.find(x => x.id === id);
-            document.getElementById('meta-host').innerText = g.host_school || "待確認";
+            document.getElementById('meta-host').innerText = g.host_school || "大數盃委員會";
             document.getElementById('meta-loc').innerText = g.location;
             document.getElementById('meta-date').innerText = new Date(g.game_date).toLocaleDateString();
+            
             meta.style.display = 'block';
             nav.style.display = 'grid';
         } else {
@@ -149,7 +152,9 @@
 
     function go(page) {
         const id = document.getElementById('game-select').value;
-        window.location.href = `${page}?game_id=${id}`;
+        if (id) {
+            window.location.href = `${page}?game_id=${id}`;
+        }
     }
 
     loadGames();

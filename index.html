@@ -10,38 +10,51 @@
         body { background: var(--bg); color: white; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; line-height: 1.6; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 600px; width: 100%; }
         
+        /* 標題區 */
         .wiki-section { background: var(--card); border-left: 5px solid var(--primary); padding: 20px; border-radius: 8px; margin-bottom: 25px; }
         .wiki-section h1 { margin: 0 0 10px 0; color: var(--primary); font-size: 1.8em; }
         .wiki-section p { font-size: 0.9em; color: #ccc; margin: 0; }
 
-        /* 14校輪值牆保持縮小清爽 */
+        /* 14校輪值表 */
         .heritage-section { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 25px; font-size: 0.85em; }
         .heritage-title { color: var(--primary); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; }
         .heritage-title::before { content: "📜"; margin-right: 8px; }
-        .region-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .region-box { background: #222; padding: 10px; border-radius: 5px; border-top: 3px solid #444; text-align: center; }
-        .school-list { list-style: none; padding: 0; margin: 0; font-size: 0.75em; color: #888; }
+        .region-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .region-box { background: #222; padding: 8px; border-radius: 5px; text-align: center; font-size: 0.9em; }
+        .school-list { list-style: none; padding: 0; margin: 5px 0 0 0; font-size: 0.8em; color: #777; }
 
+        /* 選擇區容器 */
         .selector-box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .label { font-size: 0.8em; color: #888; font-weight: bold; margin-bottom: 12px; display: block; }
+        .label { font-size: 0.85em; color: #888; font-weight: bold; margin-bottom: 15px; display: block; }
         
-        /* 直球對決按鈕樣式 */
-        .fast-track { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .btn-year { background: #333; color: var(--primary); border: 1px solid var(--primary); padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s; text-align: center; }
-        .btn-year:hover, .btn-year.active { background: var(--primary); color: #000; }
+        /* 直球對決：直列式卡片樣式 */
+        .fast-track { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+        .season-card {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-left: 5px solid var(--primary);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .season-card:hover {
+            background: #363636;
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+        .card-title { color: var(--primary); font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+        .card-info { font-size: 0.85em; color: #bbb; display: flex; align-items: center; }
+        .card-info::before { margin-right: 8px; font-size: 1.1em; }
+        .info-host::before { content: "🏫"; }
+        .info-loc::before { content: "🏟️"; }
 
-        select { width: 100%; padding: 12px; border-radius: 8px; background: #333; color: white; border: 1px solid #444; font-size: 1em; margin-bottom: 15px; outline: none; appearance: none; }
+        /* 歷史 LOV 樣式 */
+        select { width: 100%; padding: 12px; border-radius: 8px; background: #333; color: white; border: 1px solid #444; font-size: 1em; outline: none; appearance: none; }
         
-        .game-meta { background: #1a1a1a; padding: 15px; border-radius: 8px; font-size: 0.85em; border: 1px dashed #444; display: none; }
-        .meta-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .meta-val { color: var(--primary); font-weight: bold; }
-
-        .nav-grid { display: none; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
-        .nav-btn { display: flex; align-items: center; background: #2a2a2a; padding: 18px; border-radius: 12px; text-decoration: none; color: white; border-left: 6px solid var(--primary); transition: 0.2s; }
-        .btn-admin { border-left-color: var(--danger); background: #2d1f1f; }
-        .nav-btn b { display: block; font-size: 1.1em; }
-        .nav-btn span { font-size: 0.8em; color: #777; }
-
         .footer { text-align: center; font-size: 0.75em; color: #444; margin-top: 50px; }
     </style>
 </head>
@@ -50,55 +63,33 @@
 <div class="container">
     <div class="wiki-section">
         <h1>大數盃壘球經典賽-Live</h1>
-        <p>「全國大專院校數學相關系所盃賽」。直球對決！快速存取最近賽事或檢視歷史數據。</p>
+        <p>「全國大專院校數學相關系所盃賽」。直球對決！快速存取近期賽事資訊。</p>
     </div>
 
+    <!-- 傳承牆 -->
     <div class="heritage-section">
         <div class="heritage-title">14 校輪值守則</div>
         <div class="region-group">
-            <div class="region-box" style="border-top-color:#3498db"><h4>北</h4><ul class="school-list"><li>中央中原</li><li>清交台大</li></ul></div>
-            <div class="region-box" style="border-top-color:#e67e22"><h4>中</h4><ul class="school-list"><li>東海中興</li><li>逢甲靜宜</li></ul></div>
-            <div class="region-box" style="border-top-color:#27ae60"><h4>南</h4><ul class="school-list"><li>中山義守</li><li>中正成大</li></ul></div>
+            <div class="region-box">北區<ul class="school-list"><li>台大/清交</li><li>師/輔/中原</li></ul></div>
+            <div class="region-box">中區<ul class="school-list"><li>逢甲/中興</li><li>東海/靜宜</li></ul></div>
+            <div class="region-box">南區<ul class="school-list"><li>成大/中山</li><li>中正/義守</li></ul></div>
         </div>
     </div>
 
     <div class="selector-box">
-        <!-- 直球對決區 -->
-        <span class="label">🚀 熱門賽事 (最近2年)</span>
+        <!-- 快速通行區 -->
+        <span class="label">🚀 熱門賽事 (直球對決)</span>
         <div id="fast-track-btns" class="fast-track">
-            <!-- 由 JS 動態生成按鈕 -->
+            <!-- 由 JS 動態生成直列卡片 -->
         </div>
 
-        <hr style="border:0; border-top:1px solid #444; margin: 20px 0;">
+        <div style="height: 1px; background: #444; margin: 25px 0;"></div>
 
-        <!-- 歷史 LOV 區 -->
+        <!-- 歷史區 -->
         <span class="label">📜 歷史球季回顧 (2024以前)</span>
-        <select id="year-select" onchange="handleYearChange(this.value)">
+        <select id="year-select" onchange="jumpToSeason(this.value)">
             <option value="">-- 請選擇歷史年份 --</option>
         </select>
-
-        <!-- 場次選擇 -->
-        <div id="match-zone" style="display:none;">
-            <span class="label">🥎 選擇比賽場次</span>
-            <select id="match-select" onchange="showMatchDetail()">
-                <option value="">-- 請選擇場次 --</option>
-            </select>
-        </div>
-
-        <div id="meta-display" class="game-meta">
-            <div class="meta-item"><span>主辦單位：</span><span class="meta-val" id="meta-host">--</span></div>
-            <div class="meta-item"><span>場地資訊：</span><span class="meta-val" id="meta-loc">--</span></div>
-            <div class="meta-item"><span>開賽日期：</span><span class="meta-val" id="meta-date">--</span></div>
-        </div>
-    </div>
-
-    <div id="viewer-nav" class="nav-grid">
-        <div style="font-size: 0.7em; color: #555; margin-bottom: 5px;">瀏覽者入口 (Viewer)</div>
-        <a href="#" onclick="go('live-board.html')" class="nav-btn"><div><b>📺 即時戰報直播</b><span>計分板連線</span></div></a>
-        <a href="#" onclick="go('matrix-score.html')" class="nav-btn"><div><b>📊 打擊表現矩陣</b><span>詳細成績</span></div></a>
-        
-        <div style="font-size: 0.7em; color: #555; margin: 10px 0 5px 0;">紀錄組入口 (Admin)</div>
-        <a href="#" onclick="go('admin-input.html')" class="nav-btn btn-admin"><div><b>✍️ 現場紀錄控制台</b><span>數據同步</span></div></a>
     </div>
 
     <div class="footer">
@@ -112,97 +103,54 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    let allGames = [];
-
     async function init() {
+        // 抓取球季(關聯場地)與比賽資訊
         const [resSeasons, resGames] = await Promise.all([
-            client.from('nmc_seasons').select('*').order('year', { ascending: false }),
-            client.from('nmc_games').select('*')
+            client.from('nmc_seasons').select('*, nmc_locations(main_name)').order('year', { ascending: false }),
+            client.from('nmc_games').select('season_id, host_school')
         ]);
 
         const seasons = resSeasons.data || [];
-        allGames = resGames.data || [];
-
+        const games = resGames.data || [];
         const fastTrackDiv = document.getElementById('fast-track-btns');
         const yearSel = document.getElementById('year-select');
 
-        // 邏輯分流：前 2 筆進按鈕，其餘進選單
         seasons.forEach((s, index) => {
             if (index < 2) {
-                // 生成按鈕
-                const btn = document.createElement('div');
-                btn.className = 'btn-year';
-                btn.innerText = `${s.year} ${s.name}`;
-                btn.onclick = () => {
-                    // 清除按鈕與選單狀態
-                    document.querySelectorAll('.btn-year').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    yearSel.value = "";
-                    handleYearChange(s.year.toString());
-                };
-                fastTrackDiv.appendChild(btn);
+                // 前兩年：生成直列資訊卡片
+                const seasonGame = games.find(g => g.season_id === s.id);
+                const hostName = seasonGame ? seasonGame.host_school : "資料建檔中";
+                const locationName = s.nmc_locations ? s.nmc_locations.main_name : "尚未公佈";
+
+                const card = document.createElement('div');
+                card.className = 'season-card';
+                card.onclick = () => jumpToSeason(s.id);
+
+                card.innerHTML = `
+                    <div class="card-title">${s.year} ${s.name}</div>
+                    <div class="card-info info-host">主辦單位：${hostName}</div>
+                    <div class="card-info info-loc">主要場地：${locationName}</div>
+                `;
+                fastTrackDiv.appendChild(card);
             } else {
-                // 生成 LOV
+                // 其餘年份：進入 LOV
                 const opt = document.createElement('option');
-                opt.value = s.year.toString();
+                opt.value = s.id;
                 opt.textContent = `${s.year}-${s.name}`;
                 yearSel.appendChild(opt);
             }
         });
     }
 
-    function handleYearChange(year) {
-        const matchZone = document.getElementById('match-zone');
-        const matchSel = document.getElementById('match-select');
-        const nav = document.getElementById('viewer-nav');
-        const meta = document.getElementById('meta-display');
-
-        // 重置狀態
-        nav.style.display = 'none';
-        meta.style.display = 'none';
-        
-        // 若是從 LOV 切換，要取消按鈕的 active 狀態
-        if (event && event.type === 'change') {
-            document.querySelectorAll('.btn-year').forEach(b => b.classList.remove('active'));
-        }
-
-        if (year) {
-            const matches = allGames.filter(g => new Date(g.game_date).getFullYear().toString() === year);
-            matchSel.innerHTML = '<option value="">-- 請選擇場次 --</option>';
-            matches.forEach(m => {
-                matchSel.innerHTML += `<option value="${m.id}">場次 ${m.match_number || '?'}</option>`;
-            });
-            matchZone.style.display = 'block';
-        } else {
-            matchZone.style.display = 'none';
-        }
-    }
-
-    function showMatchDetail() {
-        const id = document.getElementById('match-select').value;
-        const meta = document.getElementById('meta-display');
-        const nav = document.getElementById('viewer-nav');
-
-        if (id) {
-            const g = allGames.find(x => x.id === id);
-            document.getElementById('meta-host').innerText = g.host_school || "大數盃委員會";
-            document.getElementById('meta-loc').innerText = g.location;
-            document.getElementById('meta-date').innerText = new Date(g.game_date).toLocaleDateString();
-            meta.style.display = 'block';
-            nav.style.display = 'grid';
-        } else {
-            meta.style.display = 'none';
-            nav.style.display = 'none';
-        }
-    }
-
-    function go(page) {
-        const id = document.getElementById('match-select').value;
-        window.location.href = `${page}?game_id=${id}`;
+    function jumpToSeason(id) {
+        if (!id) return;
+        // 跳轉到年度賽程檢視頁
+        window.location.href = `season-view.html?season_id=${id}`;
     }
 
     init();
     
+    // 隱藏入口
     let clicks = 0;
     document.getElementById('secret-gate').addEventListener('click', () => {
         if (++clicks === 5) {

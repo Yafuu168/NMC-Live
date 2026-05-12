@@ -14,18 +14,22 @@
         .wiki-section h1 { margin: 0 0 10px 0; color: var(--primary); font-size: 1.8em; }
         .wiki-section p { font-size: 0.9em; color: #ccc; margin: 0; }
 
+        /* 14校輪值牆保持縮小清爽 */
         .heritage-section { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 25px; font-size: 0.85em; }
         .heritage-title { color: var(--primary); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; }
         .heritage-title::before { content: "📜"; margin-right: 8px; }
         .region-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
         .region-box { background: #222; padding: 10px; border-radius: 5px; border-top: 3px solid #444; text-align: center; }
-        .region-north { border-top-color: #3498db; }
-        .region-central { border-top-color: #e67e22; }
-        .region-south { border-top-color: #27ae60; }
         .school-list { list-style: none; padding: 0; margin: 0; font-size: 0.75em; color: #888; }
 
         .selector-box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .label { font-size: 0.8em; color: #888; font-weight: bold; margin-bottom: 8px; display: block; }
+        .label { font-size: 0.8em; color: #888; font-weight: bold; margin-bottom: 12px; display: block; }
+        
+        /* 直球對決按鈕樣式 */
+        .fast-track { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-year { background: #333; color: var(--primary); border: 1px solid var(--primary); padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s; text-align: center; }
+        .btn-year:hover, .btn-year.active { background: var(--primary); color: #000; }
+
         select { width: 100%; padding: 12px; border-radius: 8px; background: #333; color: white; border: 1px solid #444; font-size: 1em; margin-bottom: 15px; outline: none; appearance: none; }
         
         .game-meta { background: #1a1a1a; padding: 15px; border-radius: 8px; font-size: 0.85em; border: 1px dashed #444; display: none; }
@@ -34,7 +38,6 @@
 
         .nav-grid { display: none; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
         .nav-btn { display: flex; align-items: center; background: #2a2a2a; padding: 18px; border-radius: 12px; text-decoration: none; color: white; border-left: 6px solid var(--primary); transition: 0.2s; }
-        .nav-btn:active { transform: scale(0.98); }
         .btn-admin { border-left-color: var(--danger); background: #2d1f1f; }
         .nav-btn b { display: block; font-size: 1.1em; }
         .nav-btn span { font-size: 0.8em; color: #777; }
@@ -47,24 +50,34 @@
 <div class="container">
     <div class="wiki-section">
         <h1>大數盃壘球經典賽-Live</h1>
-        <p>「全國大專院校數學相關系所盃賽」。本系統專門針對慢速壘球設計，提供球季年度數據存檔與即時戰報。</p>
+        <p>「全國大專院校數學相關系所盃賽」。直球對決！快速存取最近賽事或檢視歷史數據。</p>
     </div>
 
     <div class="heritage-section">
-        <div class="heritage-title">14 校輪值守則 (傳承名單)</div>
+        <div class="heritage-title">14 校輪值守則</div>
         <div class="region-group">
-            <div class="region-box region-north"><h4>北區</h4><ul class="school-list"><li>中央中原</li><li>清交</li><li>台大</li><li>師大</li><li>輔大</li></ul></div>
-            <div class="region-box region-central"><h4>中區</h4><ul class="school-list"><li>東海</li><li>中興</li><li>逢甲</li><li>靜宜</li></ul></div>
-            <div class="region-box region-south"><h4>南區</h4><ul class="school-list"><li>東華花師</li><li>中山</li><li>義守</li><li>中正</li><li>成大</li></ul></div>
+            <div class="region-box" style="border-top-color:#3498db"><h4>北</h4><ul class="school-list"><li>中央中原</li><li>清交台大</li></ul></div>
+            <div class="region-box" style="border-top-color:#e67e22"><h4>中</h4><ul class="school-list"><li>東海中興</li><li>逢甲靜宜</li></ul></div>
+            <div class="region-box" style="border-top-color:#27ae60"><h4>南</h4><ul class="school-list"><li>中山義守</li><li>中正成大</li></ul></div>
         </div>
     </div>
 
     <div class="selector-box">
-        <span class="label">📅 選擇球季年度</span>
-        <select id="year-select" onchange="filterGames()">
-            <option value="">載入中...</option>
+        <!-- 直球對決區 -->
+        <span class="label">🚀 熱門賽事 (最近2年)</span>
+        <div id="fast-track-btns" class="fast-track">
+            <!-- 由 JS 動態生成按鈕 -->
+        </div>
+
+        <hr style="border:0; border-top:1px solid #444; margin: 20px 0;">
+
+        <!-- 歷史 LOV 區 -->
+        <span class="label">📜 歷史球季回顧 (2024以前)</span>
+        <select id="year-select" onchange="handleYearChange(this.value)">
+            <option value="">-- 請選擇歷史年份 --</option>
         </select>
 
+        <!-- 場次選擇 -->
         <div id="match-zone" style="display:none;">
             <span class="label">🥎 選擇比賽場次</span>
             <select id="match-select" onchange="showMatchDetail()">
@@ -81,11 +94,11 @@
 
     <div id="viewer-nav" class="nav-grid">
         <div style="font-size: 0.7em; color: #555; margin-bottom: 5px;">瀏覽者入口 (Viewer)</div>
-        <a href="#" onclick="go('live-board.html')" class="nav-btn"><div><b>📺 即時戰報直播</b><span>計分板與局數比分連線</span></div></a>
-        <a href="#" onclick="go('matrix-score.html')" class="nav-btn"><div><b>📊 打擊表現矩陣</b><span>各棒次詳細攻守成績</span></div></a>
+        <a href="#" onclick="go('live-board.html')" class="nav-btn"><div><b>📺 即時戰報直播</b><span>計分板連線</span></div></a>
+        <a href="#" onclick="go('matrix-score.html')" class="nav-btn"><div><b>📊 打擊表現矩陣</b><span>詳細成績</span></div></a>
         
         <div style="font-size: 0.7em; color: #555; margin: 10px 0 5px 0;">紀錄組入口 (Admin)</div>
-        <a href="#" onclick="go('admin-input.html')" class="nav-btn btn-admin"><div><b>✍️ 現場紀錄控制台</b><span>錄入比賽數據並同步</span></div></a>
+        <a href="#" onclick="go('admin-input.html')" class="nav-btn btn-admin"><div><b>✍️ 現場紀錄控制台</b><span>數據同步</span></div></a>
     </div>
 
     <div class="footer">
@@ -102,43 +115,56 @@
     let allGames = [];
 
     async function init() {
-        // 同時獲取球季與比賽資料
         const [resSeasons, resGames] = await Promise.all([
             client.from('nmc_seasons').select('*').order('year', { ascending: false }),
             client.from('nmc_games').select('*')
         ]);
 
-        const seasons = resSeasons.data;
+        const seasons = resSeasons.data || [];
         allGames = resGames.data || [];
 
-        if (seasons) {
-            const yearSel = document.getElementById('year-select');
-            yearSel.innerHTML = '<option value="">-- 請選擇球季 --</option>';
+        const fastTrackDiv = document.getElementById('fast-track-btns');
+        const yearSel = document.getElementById('year-select');
 
-            seasons.forEach(s => {
-                // 找出該球季年度對應的主辦校 (以第一場比賽為準)
-                const seasonGames = allGames.filter(g => new Date(g.game_date).getFullYear() === s.year);
-                const host = (seasonGames.length > 0 && seasonGames[0].host_school) ? seasonGames[0].host_school : "待定";
-                
-                // 組合顯示文字：2026-第30屆大數盃(主辦：台灣大學)
-                const displayText = `${s.year}-${s.name}(主辦：${host})`;
+        // 邏輯分流：前 2 筆進按鈕，其餘進選單
+        seasons.forEach((s, index) => {
+            if (index < 2) {
+                // 生成按鈕
+                const btn = document.createElement('div');
+                btn.className = 'btn-year';
+                btn.innerText = `${s.year} ${s.name}`;
+                btn.onclick = () => {
+                    // 清除按鈕與選單狀態
+                    document.querySelectorAll('.btn-year').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    yearSel.value = "";
+                    handleYearChange(s.year.toString());
+                };
+                fastTrackDiv.appendChild(btn);
+            } else {
+                // 生成 LOV
                 const opt = document.createElement('option');
                 opt.value = s.year.toString();
-                opt.textContent = displayText;
+                opt.textContent = `${s.year}-${s.name}`;
                 yearSel.appendChild(opt);
-            });
-        }
+            }
+        });
     }
 
-    function filterGames() {
-        const year = document.getElementById('year-select').value;
+    function handleYearChange(year) {
         const matchZone = document.getElementById('match-zone');
         const matchSel = document.getElementById('match-select');
         const nav = document.getElementById('viewer-nav');
         const meta = document.getElementById('meta-display');
 
+        // 重置狀態
         nav.style.display = 'none';
         meta.style.display = 'none';
+        
+        // 若是從 LOV 切換，要取消按鈕的 active 狀態
+        if (event && event.type === 'change') {
+            document.querySelectorAll('.btn-year').forEach(b => b.classList.remove('active'));
+        }
 
         if (year) {
             const matches = allGames.filter(g => new Date(g.game_date).getFullYear().toString() === year);
@@ -177,12 +203,11 @@
 
     init();
     
-    // 隱藏入口邏輯
     let clicks = 0;
     document.getElementById('secret-gate').addEventListener('click', () => {
         if (++clicks === 5) {
             const p = prompt("管理驗證：");
-            if (p === "nmc-boss-2026") window.location.href = "nmc-softball-manager-v2026x9527.html";
+            if (p === "nmc-boss-2026") window.location.href = "nmc-softball-manager-sabrina.html";
             else clicks = 0;
         }
     });

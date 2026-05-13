@@ -6,38 +6,71 @@
     <title>NMC 管理總台 | Yasin Control Center</title>
     <style>
         :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --accent: #3498db; --danger: #e74c3c; }
-        body { background: var(--bg); color: white; font-family: "PingFang TC", sans-serif; margin: 0; padding: 20px; }
+        body { background: var(--bg); color: white; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
         .container { max-width: 900px; margin: 0 auto; }
         
-        .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+        /* Header 區塊與右上角連結 */
+        .header { border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { margin: 0; color: var(--primary); font-size: 1.8em; }
-        .header span { font-size: 0.8em; color: #777; }
+        .header p { margin: 5px 0 0 0; font-size: 0.85em; color: #888; }
 
-        .grid-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 600px) { .grid-section { grid-template-columns: 1fr; } }
+        .home-link {
+            text-decoration: none;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .home-link:hover { background: var(--primary); color: #000; }
 
-        .category-box { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #333; }
-        .category-title { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; color: #eee; }
+        /* 網格版面 */
+        .grid-section { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        @media (max-width: 768px) { .grid-section { grid-template-columns: 1fr; } }
+
+        .category-box { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #333; height: fit-content; }
+        .category-title { font-size: 1.1em; font-weight: bold; margin-bottom: 18px; display: flex; align-items: center; color: #eee; }
         .category-title::before { content: ""; width: 4px; height: 18px; background: var(--primary); margin-right: 10px; border-radius: 2px; }
 
-        .nav-list { display: flex; flex-direction: column; gap: 10px; }
+        /* 導航清單 */
+        .nav-list { display: flex; flex-direction: column; gap: 12px; }
         .nav-item { 
             display: flex; 
             align-items: center; 
             background: #333; 
             padding: 15px; 
-            border-radius: 8px; 
+            border-radius: 10px; 
             text-decoration: none; 
             color: #ddd; 
             transition: 0.2s;
             border: 1px solid transparent;
         }
-        .nav-item:hover { background: #3d3d3d; border-color: var(--primary); color: var(--primary); transform: translateX(5px); }
-        .nav-item b { font-size: 1em; display: block; }
-        .nav-item span { font-size: 0.75em; color: #777; }
+        .nav-item:hover { 
+            background: #3d3d3d; 
+            border-color: var(--primary); 
+            color: var(--primary); 
+            transform: translateX(8px); 
+        }
+        .nav-item b { font-size: 1em; display: block; margin-bottom: 2px; }
+        .nav-item span { font-size: 0.75em; color: #777; line-height: 1.2; }
         
-        .icon { font-size: 1.4em; margin-right: 15px; width: 30px; text-align: center; }
-        .lock-notice { background: #2d1f1f; color: var(--danger); font-size: 0.7em; padding: 10px; border-radius: 5px; margin-top: 15px; border: 1px dashed var(--danger); }
+        .icon { font-size: 1.5em; margin-right: 15px; width: 35px; text-align: center; }
+
+        .lock-notice { 
+            background: rgba(231, 76, 60, 0.1); 
+            color: var(--danger); 
+            font-size: 0.75em; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            border: 1px dashed var(--danger); 
+            line-height: 1.4;
+        }
+        .footer { text-align: center; font-size: 0.75em; color: #444; margin-top: 50px; padding: 20px; border-top: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -45,75 +78,75 @@
 <div class="container">
     <div class="header">
         <div>
-            <h1>NMC 管理控制台</h1>
-            <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #888;">NMC 慢壘數據引擎 - 紀錄組專用入口</p>
+            <h1>Yasin 管理控制台</h1>
+            <p>NMC 慢壘數據引擎 - 紀錄組維護入口</p>
         </div>
-        <!-- 右上角新增連結 -->
+        <!-- 右上角回到主頁 -->
         <a href="../index.html" class="home-link">
             <span>🏠 回到首頁</span>
         </a>
     </div>
 
     <div class="grid-section">
-        <!-- 區塊 1：總維護性質 (靜態/全局設定) -->
+        <!-- 區塊 1：總維護性質 (Master Data) -->
         <div class="category-box">
             <div class="category-title">1. 總維護性質 (Master Data)</div>
             <div class="nav-list">
-                <a href="season-mgt.html" class="nav-item">
+                <!-- 已更新連結為 yasin-season-mgt.html -->
+                <a href="yasin-season-mgt.html" class="nav-item">
                     <div class="icon">🏆</div>
-                    <div><b>球季年度維護</b><span>歷屆屆次、年度、主辦權鎖定</span></div>
+                    <div><b>球季年度維護</b><span>歷屆年度、球季名稱與資料鎖定狀態</span></div>
                 </a>
                 <a href="location-mgt.html" class="nav-item">
                     <div class="icon">🏟️</div>
-                    <div><b>場地資訊維護</b><span>全國各地球場、Google Map 連結</span></div>
+                    <div><b>場地資訊維護</b><span>各校球場資訊、Google Map 位置管理</span></div>
                 </a>
                 <a href="player-mgt.html" class="nav-item">
                     <div class="icon">👤</div>
-                    <div><b>球員基本資料</b><span>選手庫新增、學號與身分維護</span></div>
+                    <div><b>球員基本資料</b><span>建立球員庫、維護身分與學號資訊</span></div>
                 </a>
                 <a href="team-mgt.html" class="nav-item">
                     <div class="icon">🛡️</div>
-                    <div><b>球隊球員登錄</b><span>管理每季球隊名冊 (Roster)</span></div>
+                    <div><b>球隊球員登錄</b><span>管理每季球隊報名名單與名冊</span></div>
                 </a>
                 <a href="code-mgt.html" class="nav-item">
                     <div class="icon">📑</div>
-                    <div><b>代號常數維護</b><span>打擊結果 (H, K, HR) 與守備位置代碼</span></div>
+                    <div><b>各代號維護</b><span>定義打擊(H, HR)與守備位置(SS, P)代碼</span></div>
                 </a>
             </div>
             <div class="lock-notice">
-                ⚠ 提醒：此區項目若設定為「Locked」，HTML 管道將不允許任何修改，僅限資料庫端調整。
+                🔒 <b>數據安全性規範：</b><br>
+                設定為「Locked」之表格不允許透過網頁端修改。僅限管理員由資料庫端進行手動變更。
             </div>
         </div>
 
-        <!-- 區塊 2：當年度性質 (動態/賽事營運) -->
+        <!-- 區塊 2：當年度性質 (Season Ops) -->
         <div class="category-box">
             <div class="category-title" style="color: var(--accent);">2. 當年度性質 (Season Ops)</div>
             <div class="nav-list">
                 <a href="batch-game-gen.html" class="nav-item">
                     <div class="icon">📅</div>
-                    <div><b>賽程場次維護</b><span>批次產生對戰組合、時間與場地分配</span></div>
+                    <div><b>賽程場次維護</b><span>批次產生對戰組合、排定比賽時間與地點</span></div>
                 </a>
                 <a href="game-lineup.html" class="nav-item">
                     <div class="icon">📋</div>
-                    <div><b>各場次攻守名單</b><span>賽前登錄先發名單、棒次排定</span></div>
+                    <div><b>各場次攻守名單</b><span>賽前排定先發棒次、投手與守備位置</span></div>
                 </a>
                 <a href="game-recorder.html" class="nav-item">
                     <div class="icon">✍️</div>
-                    <div><b>現場紀錄控制台</b><span>錄入比賽實況、打席結果同步</span></div>
+                    <div><b>現場紀錄控制台</b><span>錄入比賽過程、即時同步戰報至首頁</span></div>
                 </a>
                 <a href="substitution-mgt.html" class="nav-item">
                     <div class="icon">🔄</div>
-                    <div><b>更換守備/代打</b><span>比賽中途換人紀錄 (含時間戳記)</span></div>
+                    <div><b>更換守備/名單</b><span>比賽中更換投手、代打或守備調動紀錄</span></div>
                 </a>
             </div>
-            <p style="font-size: 0.75em; color: #555; margin-top: 15px;">
-                * 2026 年度數據將即時同步至前端直播看板。
-            </p>
         </div>
     </div>
 
-    <div style="text-align: center; margin-top: 40px; border-top: 1px solid #333; padding-top: 20px;">
-        <a href="../index.html" style="color: #666; text-decoration: none; font-size: 0.8em;">← 返回大數盃首頁</a>
+    <div class="footer">
+        NMC Data Engine © 2026<br>
+        維護管道：yasin/yasin-main.html
     </div>
 </div>
 

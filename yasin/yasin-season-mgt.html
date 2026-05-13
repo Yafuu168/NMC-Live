@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>球季維護 | Yasin Control Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --danger: #e74c3c; --success: #27ae60; }
+        body { background: var(--bg); color: white; font-family: "PingFang TC", sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h2 { margin: 0; color: var(--primary); }
+
+        /* 新增區塊 */
+        .add-box { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 25px; display: flex; gap: 10px; align-items: flex-end; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        .input-group label { font-size: 0.75em; color: #888; }
+        input, select { background: #333; color: white; border: 1px solid #444; padding: 10px; border-radius: 6px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { background: #d4af37; }
+
+        /* 表格區塊 */
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
+        th { background: #2d2d2d; color: var(--primary); font-size: 0.9em; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .status-open { background: rgba(39, 174, 96, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .status-locked { background: rgba(231, 76, 60, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+
+        /* 鎖定列樣式 */
+        .row-locked { opacity: 0.6; }
+        .row-locked input { background: transparent; border: none; pointer-events: none; }
+        .btn-lock-toggle { background: #444; color: white; font-size: 0.8em; }
+        .btn-lock-toggle:hover { background: #555; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>🏆 球季年度維護</h2>
+        <a href="yasin-main.html" style="color: #666; text-decoration: none; font-size: 0.9em;">← 返回控制台</a>
+    </div>
+
+    <!-- 1. 新增球季 (僅限未鎖定時操作) -->
+    <div class="add-box">
+        <div class="input-group">
+            <label>西元年度</label>
+            <input type="number" id="new-year" placeholder="2026">
+        </div>
+        <div class="input-group">
+            <label>球季屆次名稱</label>
+            <input type="text" id="new-name" placeholder="第30屆大數盃">
+        </div>
+        <button class="btn btn-primary" onclick="addSeason()">新增球季</button>
+    </div>
+
+    <!-- 2. 球季清單 -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">年度</th>
+                <th>球季屆次名稱</th>
+                <th style="width: 20%;">狀態 (Lock)</th>
+                <th style="width: 20%;">操作</th>
+            </tr>
+        </thead>
+        <tbody id="season-table-body">
+            <!-- 由 JS 動態渲染 -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // 請替換為您的 Supabase 憑證
+    const SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 初始載入
+    async function fetchSeasons() {
+        const { data: seasons, error } = await client
+            .from('nmc_seasons')
+            .select('*')
+            .order('year', { ascending: false });
+
+        if (error) return console.error(error);
+        renderTable(seasons);
+    }
+
+    function renderTable(seasons) {
+        const tbody = document.getElementById('season-table-body');
+        tbody.innerHTML = '';
+
+        seasons.forEach(s => {
+            const isLocked = s.is_locked; //
+            const tr = document.createElement('tr');
+            if (isLocked) tr.className = 'row-locked';
+
+            tr.innerHTML = `
+                <td><b>${s.year}</b></td>
+                <td>
+                    <input type="text" value="${s.name}" 
+                        ${isLocked ? 'readonly' : ''} 
+                        onchange="updateSeasonName('${s.id}', this.value)">
+                </td>
+                <td>
+                    <span class="status-badge ${isLocked ? 'status-locked' : 'status-open'}">
+                        ${isLocked ? '🔒 已鎖定' : '🔓 開放中'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-lock-toggle" onclick="toggleLock('${s.id}', ${isLocked})">
+                        ${isLocked ? '手動解鎖' : '執行鎖定'}
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 1. 新增球季
+    async function addSeason() {
+        const year = document.getElementById('new-year').value;
+        const name = document.getElementById('new-name').value;
+
+        if (!year || !name) return alert("請完整輸入年度與名稱");
+
+        const { error } = await client.from('nmc_seasons').insert([{ year, name, is_locked: false }]);
+
+        if (error) {
+            alert("新增失敗：年度可能重複或資料庫異常");
+        } else {
+            document.getElementById('new-year').value = '';
+            document.getElementById('new-name').value = '';
+            fetchSeasons();
+        }
+    }
+
+    // 2. 更新球季名稱 (僅限未鎖定)
+    async function updateSeasonName(id, newName) {
+        const { error } = await client.from('nmc_seasons').update({ name: newName }).eq('id', id);
+        if (error) alert("更新失敗，請檢查鎖定狀態");
+    }
+
+    // 3. 狀態切換 (解鎖需驗證)
+    async function toggleLock(id, currentStatus) {
+        const newStatus = !currentStatus;
+        
+        // 若要解鎖，加入一個簡單的管理員口令檢查 (Sabrina 暗號邏輯)
+        if (!newStatus === false) { 
+            const code = prompt("請輸入管理員授權碼以執行解除鎖定：");
+            if (code !== "nmc-boss-2026") return alert("授權碼錯誤，無法解鎖");
+        }
+
+        const { error } = await client.from('nmc_seasons').update({ is_locked: newStatus }).eq('id', id);
+        if (!error) fetchSeasons();
+    }
+
+    fetchSeasons();
+</script>
+</body>
+</html>

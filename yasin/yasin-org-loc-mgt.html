@@ -6,31 +6,21 @@
     <title>組織與場地維護 | Yasin Control Center</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --locked: #333; --text-dim: #888; }
+        :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --text-dim: #888; }
         body { background: var(--bg); color: white; font-family: "PingFang TC", sans-serif; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; }
-        
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px; }
         .header h2 { margin: 0; color: var(--primary); }
-
-        /* 新增區塊 */
         .add-box { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #444; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: flex-end; }
         .input-group { display: flex; flex-direction: column; gap: 5px; }
         .input-group label { font-size: 0.75em; color: var(--text-dim); }
-        input { background: #333; color: white; border: 1px solid #444; padding: 10px; border-radius: 6px; outline: none; }
-        input:focus { border-color: var(--primary); }
-        
-        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
+        input { background: #333; color: white; border: 1px solid #444; padding: 10px; border-radius: 6px; outline: none; width: 90%; }
+        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
         .btn-primary { background: var(--primary); color: #000; }
-        .btn-primary:hover { background: #d4af37; }
-
-        /* 表格區塊 */
-        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #333; }
         th { background: #2d2d2d; color: var(--primary); font-size: 0.85em; }
-
-        /* 鎖定狀態樣式 */
-        .row-locked { color: var(--text-dim); background: rgba(0,0,0,0.2); }
+        .row-locked { color: var(--text-dim); background: rgba(255,255,255,0.02); }
         .row-locked input { background: transparent; border: none; color: var(--text-dim); pointer-events: none; }
         .status-tag { font-size: 0.7em; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .tag-locked { background: #444; color: #aaa; border: 1px solid #555; }
@@ -46,117 +36,74 @@
     </div>
 
     <div class="add-box">
-        <div class="input-group">
-            <label>學校全稱</label>
-            <input type="text" id="new-name" placeholder="國立成功大學">
-        </div>
-        <div class="input-group">
-            <label>校系簡稱</label>
-            <input type="text" id="new-short" placeholder="成大數學">
-        </div>
-        <div class="input-group">
-            <label>入會日期</label>
-            <input type="date" id="new-join">
-        </div>
-        <div class="input-group">
-            <label>主球場</label>
-            <input type="text" id="new-loc" placeholder="自強球場">
-        </div>
-        <div class="input-group">
-            <label>地圖連結 (URL)</label>
-            <input type="text" id="new-map" placeholder="https://...">
-        </div>
+        <div class="input-group"><label>學校全稱</label><input type="text" id="new-name"></div>
+        <div class="input-group"><label>校系簡稱</label><input type="text" id="new-short"></div>
+        <div class="input-group"><label>入會日期</label><input type="date" id="new-join"></div>
+        <div class="input-group"><label>主球場</label><input type="text" id="new-loc"></div>
+        <div class="input-group"><label>地圖連結</label><input type="text" id="new-map"></div>
         <button class="btn btn-primary" onclick="addOrg()">確認存檔</button>
     </div>
 
     <table>
         <thead>
-            <tr>
-                <th>狀態</th>
-                <th>學校全稱</th>
-                <th>簡稱</th>
-                <th>入會/退出日期</th>
-                <th>主球場</th>
-                <th>地圖</th>
-            </tr>
+            <tr><th>狀態</th><th>學校全稱</th><th>簡稱</th><th>入會日期</th><th>主球場</th><th>地圖</th></tr>
         </thead>
-        <tbody id="org-table-body">
-            </tbody>
+        <tbody id="org-table-body"></tbody>
     </table>
 </div>
 
 <script>
-    // Supabase 憑證
     const SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
-    const SUPABASE_KEY = 'YOUR_SUPABASE_KEY'; 
+    // --- 重要：請在此處填入您目前的 API KEY ---
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc'; 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 初始載入
     async function fetchOrgs() {
-        const { data, error } = await client
-            .from('nmc_organizations')
-            .select('*')
-            .order('name');
-        
+        const { data, error } = await client.from('nmc_organizations').select('*').order('name');
         if (!error) renderTable(data);
     }
 
     function renderTable(orgs) {
         const tbody = document.getElementById('org-table-body');
         tbody.innerHTML = '';
-
         orgs.forEach(o => {
-            const isLocked = o.is_locked; // 布林值
+            const isLocked = o.is_locked;
             const tr = document.createElement('tr');
             if (isLocked) tr.className = 'row-locked';
-
             tr.innerHTML = `
-                <td>
-                    <span class="status-tag ${isLocked ? 'tag-locked' : 'tag-open'}">
-                        ${isLocked ? '🔒 鎖定' : '🔓 編輯中'}
-                    </span>
-                </td>
+                <td><span class="status-tag ${isLocked ? 'tag-locked' : 'tag-open'}">${isLocked ? '🔒 鎖定' : '🔓 編輯'}</span></td>
                 <td><input type="text" value="${o.name}" ${isLocked ? 'readonly' : ''} onchange="updateField('${o.id}', 'name', this.value)"></td>
                 <td><input type="text" value="${o.short_name}" ${isLocked ? 'readonly' : ''} onchange="updateField('${o.id}', 'short_name', this.value)"></td>
-                <td style="font-size:0.8em">
-                    ${o.join_date || '--'} / ${o.leave_date || '現役'}
-                </td>
+                <td>${o.join_date || '--'}</td>
                 <td><input type="text" value="${o.main_location || ''}" ${isLocked ? 'readonly' : ''} onchange="updateField('${o.id}', 'main_location', this.value)"></td>
-                <td>
-                    ${o.map_url ? `<a href="${o.map_url}" target="_blank" style="color: #3498db; font-size: 0.8em;">開啟地圖</a>` : '--'}
-                </td>
+                <td>${o.map_url ? `<a href="${o.map_url}" target="_blank" style="color:#3498db">地圖</a>` : '--'}</td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    // 新增資料：強致寫入 is_locked = true (Y)
     async function addOrg() {
-        const name = document.getElementById('new-name').value;
-        const short_name = document.getElementById('new-short').value;
-        const join_date = document.getElementById('new-join').value;
-        const main_location = document.getElementById('new-loc').value;
-        const map_url = document.getElementById('new-map').value;
+        const payload = {
+            name: document.getElementById('new-name').value,
+            short_name: document.getElementById('new-short').value,
+            join_date: document.getElementById('new-join').value || null,
+            main_location: document.getElementById('new-loc').value,
+            map_url: document.getElementById('new-map').value,
+            is_locked: true // 存檔後預設鎖定
+        };
 
-        if (!name || !short_name) return alert("請填寫學校名稱與簡稱");
-
-        const { error } = await client.from('nmc_organizations').insert([{
-            name, short_name, join_date, main_location, map_url,
-            is_locked: true  // 存檔後預設為 Y
-        }]);
-
+        const { error } = await client.from('nmc_organizations').insert([payload]);
         if (error) alert("新增失敗：" + error.message);
         else {
-            alert("資料已安全存檔並鎖定。");
+            alert("資料已存檔並鎖定。");
             location.reload();
         }
     }
 
-    // 更新欄位 (僅在 is_locked 為 false 時 Supabase 才會允許，此處為前端防護)
     async function updateField(id, field, value) {
         const { error } = await client.from('nmc_organizations').update({ [field]: value }).eq('id', id);
         if (error) {
-            alert("更新失敗：此資料可能已被鎖定或權限不足。");
+            alert("更新失敗：此資料已被鎖定，無法修改。");
             fetchOrgs();
         }
     }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>組織與場地維護 | Yasin Control Center</title>
+    <title>承辦學校輪值維護 | Yasin Control Center</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --text-dim: #888; --danger: #e74c3c; --success: #27ae60; }
@@ -53,30 +53,30 @@
 
 <div class="container">
     <div class="header">
-        <h2>🏫 組織與場地基礎維護</h2>
+        <h2>🏆 大數盃承辦學校輪值名單維護</h2>
         <a href="yasin-main.html" class="back-link">🏠 返回管理總台</a>
     </div>
 
     <div class="add-box">
         <div class="input-group">
             <label>學校全稱</label>
-            <input type="text" id="new-name" placeholder="國立臺灣大學">
+            <input type="text" id="new-name" placeholder="例如：國立臺灣大學">
         </div>
         <div class="input-group">
             <label>校系簡稱</label>
-            <input type="text" id="new-short" placeholder="台大數學">
+            <input type="text" id="new-short" placeholder="例如：台大數學">
         </div>
         <div class="input-group">
-            <label>入會日期</label>
+            <label>加入盃賽日期</label>
             <input type="date" id="new-join">
         </div>
         <div class="input-group">
-            <label>主球場名稱</label>
-            <input type="text" id="new-loc" placeholder="台大壘球場">
+            <label>該校主要球場</label>
+            <input type="text" id="new-loc" placeholder="例如：台大壘球場">
         </div>
         <div class="input-group">
-            <label>地圖 URL</label>
-            <input type="text" id="new-map" placeholder="https://googl...">
+            <label>球場地圖 URL</label>
+            <input type="text" id="new-map" placeholder="https://maps.google...">
         </div>
         <button class="btn btn-primary" onclick="addOrg()">確認存檔</button>
     </div>
@@ -85,11 +85,11 @@
         <thead>
             <tr>
                 <th width="80">狀態</th>
-                <th>學校全稱</th>
-                <th>簡稱</th>
-                <th width="180">入會 / 退出日期</th>
-                <th>主球場</th>
-                <th width="180">管理操作</th>
+                <th>輪值學校全稱</th>
+                <th>校系簡稱</th>
+                <th width="180">入會 / 退出年度</th>
+                <th>代表主球場</th>
+                <th width="180">大會管理操作</th>
             </tr>
         </thead>
         <tbody id="org-table-body">
@@ -98,31 +98,29 @@
 </div>
 
 <script>
-    // Supabase 配置
+    // Supabase 配置保持不變
     const SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc'; 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 載入資料
+    // 載入輪值名單
     async function fetchOrgs() {
         const { data, error } = await client.from('nmc_organizations').select('*').order('name');
         if (error) {
-            console.error("載入失敗:", error);
+            console.error("輪值名單載入失敗:", error);
         } else {
             renderTable(data);
         }
     }
 
-    // 渲染表格 (包含自動欄位偵測與退出日期顯示)
+    // 渲染大數盃承辦學校清單
     function renderTable(orgs) {
         const tbody = document.getElementById('org-table-body');
         tbody.innerHTML = '';
 
         orgs.forEach(o => {
-            // 處理 is_locked (相容 NULL 狀況)
             const isLocked = (o.is_locked === true || o.Is_Locked === true);
             
-            // 欄位自動偵測 (解決大小寫不一導致 undefined 的問題)
             const d_name = o.name || o.Name || '';
             const d_short = o.short_name || o.Short_Name || '';
             const d_join = o.join_date || o.Join_Date || '--';
@@ -141,9 +139,9 @@
                 <td><input type="text" id="name-${o.id}" value="${d_name}" ${isLocked ? 'readonly' : ''}></td>
                 <td><input type="text" id="short-${o.id}" value="${d_short}" ${isLocked ? 'readonly' : ''}></td>
                 <td class="date-info">
-                    <div style="color: #888;">入：${d_join}</div>
+                    <div style="color: #888;">入會：${d_join}</div>
                     <div style="color: ${d_leave ? '#e74c3c' : '#27ae60'}">
-                        出：${d_leave ? d_leave : '現役成員'}
+                        狀態：${d_leave ? `已於 ${d_leave} 退出` : '現役輪值學校'}
                     </div>
                 </td>
                 <td><input type="text" id="loc-${o.id}" value="${d_loc}" ${isLocked ? 'readonly' : ''}></td>
@@ -152,7 +150,7 @@
                         <button class="btn-s btn-save" onclick="saveAndLock('${o.id}')">送出鎖定</button>
                         <button class="btn-s btn-exit" onclick="exitLeague('${o.id}')">退出賽事</button>
                     ` : `
-                        <span style="font-size:0.7em; color:#555">後台唯讀狀態</span>
+                        <span style="font-size:0.7em; color:#555">大會唯讀鎖定</span>
                     `}
                 </td>
             `;
@@ -165,54 +163,3 @@
         const payload = {
             name: document.getElementById(`name-${id}`).value,
             short_name: document.getElementById(`short-${id}`).value,
-            main_location: document.getElementById(`loc-${id}`).value,
-            is_locked: true // 修改完自動鎖定
-        };
-
-        const { error } = await client.from('nmc_organizations').update(payload).eq('id', id);
-        if (error) alert("更新失敗：" + error.message);
-        else {
-            alert("更新成功並已重新鎖定。");
-            fetchOrgs();
-        }
-    }
-
-    // 操作：退出賽事 (押日期並鎖定)
-    async function exitLeague(id) {
-        if (!confirm("確定要執行「退出賽事」嗎？\n這將會押上今日日期並永久鎖定資料。")) return;
-        
-        const today = new Date().toISOString().split('T')[0];
-        const { error } = await client.from('nmc_organizations')
-            .update({ leave_date: today, is_locked: true })
-            .eq('id', id);
-
-        if (error) alert("操作失敗");
-        else fetchOrgs();
-    }
-
-    // 操作：新增 (預設存檔即鎖定)
-    async function addOrg() {
-        const payload = {
-            name: document.getElementById('new-name').value,
-            short_name: document.getElementById('new-short').value,
-            join_date: document.getElementById('new-join').value || null,
-            main_location: document.getElementById('new-loc').value,
-            map_url: document.getElementById('new-map').value,
-            is_locked: true 
-        };
-
-        if (!payload.name || !payload.short_name) return alert("請填寫學校全稱與簡稱");
-
-        const { error } = await client.from('nmc_organizations').insert([payload]);
-        if (error) alert("新增失敗：" + error.message);
-        else {
-            alert("資料已安全存檔並鎖定。");
-            location.reload();
-        }
-    }
-
-    // 初始載入
-    fetchOrgs();
-</script>
-</body>
-</html>

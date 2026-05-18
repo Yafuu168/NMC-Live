@@ -7,26 +7,20 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --text-dim: #888; --accent: #3498db; }
-        
-        /* 1. 全域網頁底座優化 */
         html, body { background: var(--bg); color: white; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; }
         
-        /* 2. 標題與操作區控制在約 19% 的高度 */
         .top-section { height: 18vh; min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-bottom: 2px solid var(--primary); background: #111; padding: 10px 20px; box-sizing: border-box; }
         .top-section h1 { margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.8em; }
         .nav-bar { display: flex; gap: 15px; margin-top: 10px; }
         .nav-link { background: #333; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85em; font-weight: bold; border: 1px solid #555; transition: 0.2s; }
         .nav-link:hover { background: var(--primary); color: #000; border-color: var(--primary); }
 
-        /* 3. 核心關聯圖：霸佔 80% 以上的主戰場版面 */
         .canvas-section { height: 78vh; width: 100%; padding: 20px; box-sizing: border-box; display: flex; justify-content: center; align-items: flex-start; background: #1f1f1f; overflow: auto; }
         
-        /* 4. Mermaid 強制滿版與手勢優化 */
         .mermaid { width: 100%; max-width: 1400px; height: 100%; text-align: center; }
         .mermaid svg { width: 100% !important; height: auto !important; max-height: 72vh !important; }
         .mermaid svg .node { cursor: pointer !important; }
         
-        /* 5. 版本宣告精準壓縮在 1% */
         .footer-section { height: 3vh; min-height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75em; color: #444; font-family: monospace; border-top: 1px solid #222; background: #111; box-sizing: border-box; }
     </style>
     <script>
@@ -34,12 +28,11 @@
             startOnLoad: true,
             theme: 'dark',
             securityLevel: 'loose', 
-            // 透過渲染引擎內部配置，把方塊與間距拉大，避免縮成一團
             flowchart: {
-                nodeSpacing: 60,      /* 方塊水平間距放大 */
-                rankSpacing: 50,      /* 階層垂直間距放大 */
+                nodeSpacing: 50,      
+                rankSpacing: 45,      
                 htmlLabels: true,
-                useMaxWidth: false    /* 停用最大寬度限制，改由 CSS 撐開 */
+                useMaxWidth: false    
             }
         });
     </script>
@@ -71,7 +64,7 @@
                 DB_RST["<div style='font-size:16px; padding:8px;'>📜 NMC_TEAM_ROSTERS<br><small>(球隊 40 人參賽名單)</small></div>"]
             end
 
-            %% 3. 賽期與比賽日誌層 (底層)
+            %% 3. 賽期與比賽日誌層 (底層：調整宣告順序，讓 LOG 靠左，RNK 靠右)
             subgraph 紀錄層 ["3. 賽期與常規賽事紀錄層 (Game Logs Core)"]
                 DB_SSN["<div style='font-size:16px; padding:8px;'>📅 NMC_SEASONS<br><small>(賽季與主辦場地分配)</small></div>"]
                 DB_GMS["<div style='font-size:16px; padding:8px;'>⚔️ NMC_GAMES<br><small>(例行賽/明星賽賽程)</small></div>"]
@@ -79,7 +72,7 @@
                 DB_RNK["<div style='font-size:16px; padding:8px;'>📊 NMC_RANKING<br><small>(戰績積分與數據統計)</small></div>"]
             end
 
-            %% 關係關係連線
+            %% 關係連線基本對齊
             DB_ORG -->|一校多隊| DB_TMS
             DB_ORG -->|輪值主辦| DB_SSN
             DB_FLD -->|場地指派| DB_SSN
@@ -90,11 +83,14 @@
             DB_SSN -->|季度賽程| DB_GMS
             DB_RST -->|派員出賽| DB_GMS
             
+            %% 核心路由調整：消除交叉的關鍵布局
             DB_GMS -->|產生打席| DB_LOG
-            DB_CST -->|條款對照| DB_LOG
             DB_GMS -->|勝負積分| DB_RNK
+            
+            %% 常數條款從右側順暢拉至左側的 LOG，不再與 GAMES 往下指的線交叉
+            DB_CST -->|條款對照| DB_LOG
 
-            %% 方塊外觀高級美化
+            %% 高級外觀美化定義
             classDef default fill:#2c3e50,stroke:#3498db,stroke-width:2px,color:#fff;
             style DB_ORG fill:#23303e,stroke:#3498db,stroke-width:2.5px;
             style DB_FLD fill:#23303e,stroke:#3498db,stroke-width:2.5px;
@@ -124,7 +120,7 @@
 </div>
 
 <div class="footer-section">
-    Yasin Tech Center | ER-Navigator v3.0.0 (2026-05-18 13:40)
+    Yasin Tech Center | ER-Navigator v3.1.0 (2026-05-18 13:45)
 </div>
 
 </body>

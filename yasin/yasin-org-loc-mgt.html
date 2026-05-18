@@ -10,13 +10,11 @@
         body { background: var(--bg); color: white; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
         .header h2 { margin: 0; color: var(--primary); letter-spacing: 1px; }
         .back-link { text-decoration: none; color: #666; font-size: 0.9em; transition: 0.3s; }
         .back-link:hover { color: var(--primary); }
 
-        /* 新增區塊 */
         .add-box { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #444; margin-bottom: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; align-items: flex-end; }
         .input-group { display: flex; flex-direction: column; gap: 5px; }
         .input-group label { font-size: 0.75em; color: var(--text-dim); font-weight: bold; }
@@ -27,12 +25,10 @@
         .btn-primary { background: var(--primary); color: #000; }
         .btn-primary:hover { background: #d4af37; transform: translateY(-2px); }
 
-        /* 表格區塊 */
         table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
         th { background: #2d2d2d; color: var(--primary); font-size: 0.85em; text-transform: uppercase; }
 
-        /* 鎖定狀態樣式 */
         .row-locked { color: var(--text-dim); background: rgba(0,0,0,0.15); }
         .row-locked input { background: transparent; border: none; color: var(--text-dim); pointer-events: none; }
         
@@ -40,11 +36,9 @@
         .tag-locked { background: #444; color: #aaa; border: 1px solid #555; }
         .tag-open { background: rgba(39, 174, 96, 0.15); color: var(--success); border: 1px solid var(--success); }
 
-        /* 操作按鈕 */
         .btn-s { padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; font-size: 0.75em; font-weight: bold; margin-right: 5px; transition: 0.2s; }
         .btn-save { background: var(--success); color: white; }
         .btn-exit { background: var(--danger); color: white; }
-        .btn-save:hover, .btn-exit:hover { filter: brightness(1.2); }
 
         .date-info { font-family: monospace; line-height: 1.4; }
     </style>
@@ -93,38 +87,45 @@
             </tr>
         </thead>
         <tbody id="org-table-body">
-            </tbody>
+            <tr><td colspan="6" style="text-align:center; color:#888;">資料同步中...若持續未顯示請檢查主控台</td></tr>
+        </tbody>
     </table>
 </div>
 
-<div style="text-align: center; margin-top: 40px; padding-top: 15px; border-top: 1px solid #333; color: #555; font-size: 0.8em; font-family: monospace;">
-    Yasin Control Center | v1.1.0 (2026-05-18 12:00)
-</div>    
-
 <script>
-    // Supabase 配置保持不變
     const SUPABASE_URL = 'https://eknqdmvmysvctnqeptwf.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbnFkbXZteXN2Y3RucWVwdHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTMxMjgsImV4cCI6MjA5MzY2OTEyOH0.3KHew8yl1v7yqg-gu7TYyJKi9pv5K1AWPwQjKgTBdpc'; 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // 載入輪值名單
     async function fetchOrgs() {
-        const { data, error } = await client.from('nmc_organizations').select('*').order('name');
-        if (error) {
-            console.error("輪值名單載入失敗:", error);
-        } else {
-            renderTable(data);
+        try {
+            const { data, error } = await client.from('nmc_organizations').select('*');
+            if (error) {
+                alert("Supabase 讀取錯誤: " + error.message);
+                console.error(error);
+            } else {
+                renderTable(data || []);
+            }
+        } catch (err) {
+            alert("網頁執行序發生錯誤: " + err.message);
         }
     }
 
-    // 渲染大數盃承辦學校清單
+    // 渲染大數盃承辦學校清單（加入大小寫雙向防呆）
     function renderTable(orgs) {
         const tbody = document.getElementById('org-table-body');
         tbody.innerHTML = '';
 
+        if (orgs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">⚠️ 資料庫目前無紀錄，請於上方新增。</td></tr>';
+            return;
+        }
+
         orgs.forEach(o => {
-            const isLocked = (o.is_locked === true || o.Is_Locked === true);
-            
+            // 自動偵測大小寫欄位
+            const d_id = o.id || o.Id || o.ID;
+            const isLocked = (o.is_locked === true || o.Is_Locked === true || o.IS_LOCKED === true);
             const d_name = o.name || o.Name || '';
             const d_short = o.short_name || o.Short_Name || '';
             const d_join = o.join_date || o.Join_Date || '--';
@@ -140,19 +141,19 @@
                         ${isLocked ? '🔒 鎖定' : '🔓 編輯'}
                     </span>
                 </td>
-                <td><input type="text" id="name-${o.id}" value="${d_name}" ${isLocked ? 'readonly' : ''}></td>
-                <td><input type="text" id="short-${o.id}" value="${d_short}" ${isLocked ? 'readonly' : ''}></td>
+                <td><input type="text" id="name-${d_id}" value="${d_name}" ${isLocked ? 'readonly' : ''}></td>
+                <td><input type="text" id="short-${d_id}" value="${d_short}" ${isLocked ? 'readonly' : ''}></td>
                 <td class="date-info">
                     <div style="color: #888;">入會：${d_join}</div>
                     <div style="color: ${d_leave ? '#e74c3c' : '#27ae60'}">
                         狀態：${d_leave ? `已於 ${d_leave} 退出` : '現役輪值學校'}
                     </div>
                 </td>
-                <td><input type="text" id="loc-${o.id}" value="${d_loc}" ${isLocked ? 'readonly' : ''}></td>
+                <td><input type="text" id="loc-${d_id}" value="${d_loc}" ${isLocked ? 'readonly' : ''}></td>
                 <td>
                     ${!isLocked ? `
-                        <button class="btn-s btn-save" onclick="saveAndLock('${o.id}')">送出鎖定</button>
-                        <button class="btn-s btn-exit" onclick="exitLeague('${o.id}')">退出賽事</button>
+                        <button class="btn-s btn-save" onclick="saveAndLock('${d_id}')">送出鎖定</button>
+                        <button class="btn-s btn-exit" onclick="exitLeague('${d_id}')">退出賽事</button>
                     ` : `
                         <span style="font-size:0.7em; color:#555">大會唯讀鎖定</span>
                     `}
@@ -164,6 +165,96 @@
 
     // 操作：修改並重新鎖定
     async function saveAndLock(id) {
-        const payload = {
-            name: document.getElementById(`name-${id}`).value,
-            short_name: document.getElementById(`short-${id}`).value,
+        try {
+            // 雙向組合 payload，確保不論後台是哪種規格都能吃到
+            const payload = {
+                name: document.getElementById(`name-${id}`).value,
+                Name: document.getElementById(`name-${id}`).value,
+                short_name: document.getElementById(`short-${id}`).value,
+                Short_Name: document.getElementById(`short-${id}`).value,
+                main_location: document.getElementById(`loc-${id}`).value,
+                Main_Location: document.getElementById(`loc-${id}`).value,
+                is_locked: true,
+                Is_Locked: true
+            };
+
+            const { error } = await client.from('nmc_organizations').update(payload).eq('id', id);
+            if (error) {
+                // 如果小寫 id 失敗，嘗試大寫 Id
+                const { error: retryError } = await client.from('nmc_organizations').update(payload).eq('Id', id);
+                if (retryError) alert("更新失敗：" + retryError.message);
+                else { alert("承辦學校資料已成功更新並重新鎖定。"); fetchOrgs(); }
+            } else {
+                alert("承辦學校資料已成功更新並重新鎖定。");
+                fetchOrgs();
+            }
+        } catch (err) { alert("執行存檔時發生未預期錯誤: " + err.message); }
+    }
+
+    // 操作：退出賽事
+    async function exitLeague(id) {
+        if (!confirm("確定該校要「退出大數盃賽事輪值」嗎？")) return;
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const payload = { leave_date: today, Leave_Date: today, is_locked: true, Is_Locked: true };
+            
+            let { error } = await client.from('nmc_organizations').update(payload).eq('id', id);
+            if (error) {
+                let { error: retryError } = await client.from('nmc_organizations').update(payload).eq('Id', id);
+                if (retryError) return alert("操作失敗");
+            }
+            fetchOrgs();
+        } catch (err) { alert("執行退出時發生錯誤: " + err.message); }
+    }
+
+    // 操作：新增輪值學校（全面大、小寫兼容寫法）
+    async function addOrg() {
+        try {
+            const nameVal = document.getElementById('new-name').value;
+            const shortVal = document.getElementById('new-short').value;
+            const joinVal = document.getElementById('new-join').value || null;
+            const locVal = document.getElementById('new-loc').value;
+            const mapVal = document.getElementById('new-map').value;
+
+            if (!nameVal || !shortVal) {
+                alert("請填寫學校全稱與系所簡稱！");
+                return;
+            }
+
+            // 同時打包大寫與小寫欄位名，由 Supabase 自動過濾接受的欄位
+            const payload = {
+                name: nameVal, Name: nameVal,
+                short_name: shortVal, Short_Name: shortVal,
+                join_date: joinVal, Join_Date: joinVal,
+                main_location: locVal, Main_Location: locVal,
+                map_url: mapVal, Map_Url: mapVal,
+                is_locked: true, Is_Locked: true
+            };
+
+            const { error } = await client.from('nmc_organizations').insert([payload]);
+            if (error) {
+                alert("新增存檔失敗原因：" + error.message);
+                console.error(error);
+            } else {
+                alert("🎉 新增承辦學校成功！資料已安全存檔並鎖定。");
+                document.getElementById('new-name').value = '';
+                document.getElementById('new-short').value = '';
+                document.getElementById('new-loc').value = '';
+                document.getElementById('new-map').value = '';
+                fetchOrgs();
+            }
+        } catch (err) {
+            alert("點擊存檔按鈕後網頁出錯: " + err.message);
+        }
+    }
+
+    // 初始進入點
+    fetchOrgs();
+</script>
+
+<div style="text-align: center; margin-top: 40px; padding-top: 15px; border-top: 1px solid #333; color: #555; font-size: 0.8em; font-family: monospace;">
+    Yasin Control Center | v1.4.0 (2026-05-18 12:10)
+</div>
+
+</body>
+</html>

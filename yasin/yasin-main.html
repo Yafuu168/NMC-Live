@@ -5,28 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理總台 | Yasin Control Center</title>
     <style>
-        :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --text-dim: #888; }
+        :root { --primary: #f1c40f; --bg: #1a1a1a; --card: #262626; --text-dim: #888; --accent: #3498db; }
         body { background: var(--bg); color: white; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 40px 20px; }
         .container { max-width: 800px; margin: 0 auto; text-align: center; }
         
         h1 { color: var(--primary); margin-bottom: 10px; letter-spacing: 2px; }
         .subtitle { color: var(--text-dim); margin-bottom: 40px; font-size: 1.1em; }
 
-        /* 選單版面配置 */
-        .menu-grid { display: flex; flex-direction: column; gap: 20px; max-width: 500px; margin: 0 auto; }
+        .menu-grid { display: flex; flex-direction: column; gap: 20px; max-width: 550px; margin: 0 auto; }
         
-        /* 系統基礎維護區塊（虛線框外包） */
-        .group-box { border: 2px dashed #444; padding: 25px 20px; border-radius: 14px; background: rgba(0,0,0,0.1); margin-bottom: 10px; }
+        /* 分組區塊樣式 */
+        .group-box { border: 2px dashed #444; padding: 25px 20px; border-radius: 14px; background: rgba(0,0,0,0.1); margin-bottom: 5px; display: flex; flex-direction: column; gap: 15px; }
         .group-title { font-size: 0.85em; color: var(--primary); text-align: left; margin-top: -35px; background: var(--bg); display: inline-block; padding: 0 10px; margin-left: 10px; font-weight: bold; letter-spacing: 1px; }
 
-        /* 按鈕基本樣式 */
-        .menu-btn { display: flex; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid #444; color: white; padding: 18px 25px; border-radius: 10px; text-decoration: none; font-size: 1.1em; font-weight: bold; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
-        /* 懸停動態效果 */
-        .menu-btn:hover { background: #333; border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.3); transform: translateY(-2px); }
+        /* 按鈕樣式 */
+        .menu-btn { display: flex; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid #444; color: white; padding: 15px 20px; border-radius: 10px; text-decoration: none; font-size: 1.05em; font-weight: bold; transition: all 0.25s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .menu-btn:hover { background: #333; border-color: var(--primary); box-shadow: 0 8px 16px rgba(0,0,0,0.3); transform: translateY(-2px); }
         .menu-btn:hover .arrow { transform: translateX(5px); color: var(--primary); }
         
-        .btn-icon { font-size: 1.3em; margin-right: 15px; }
+        .btn-icon { font-size: 1.2em; margin-right: 15px; display: inline-block; width: 25px; text-align: center; }
         .btn-text { flex-grow: 1; text-align: left; }
         .arrow { color: #555; transition: 0.3s; font-family: monospace; }
     </style>
@@ -40,26 +37,76 @@
     <div class="menu-grid">
         
         <div class="group-box">
-            <span class="group-title">系統基礎維護項目</span>
+            <span class="group-title">大會基礎主檔維護 (Master Data)</span>
             
             <a href="yasin-org-loc-mgt.html" class="menu-btn">
                 <span class="btn-icon">🏆</span>
                 <span class="btn-text">大數盃承辦學校輪值名單維護</span>
                 <span class="arrow">➔</span>
             </a>
+
+            <a href="yasin-ballfield-mgt.html" class="menu-btn">
+                <span class="btn-icon">🗺️</span>
+                <span class="btn-text">大會認證球場資料維護</span>
+                <span class="arrow">➔</span>
+            </a>
+
+            <a href="yasin-constants-mgt.html" class="menu-btn">
+                <span class="btn-icon">📋</span>
+                <span class="btn-text">系統事件對照常數維護</span>
+                <span class="arrow">➔</span>
+            </a>
         </div>
 
-        <a href="yasin-team-base.html" class="menu-btn">
-            <span class="btn-icon">⚾</span>
-            <span class="btn-text">參賽球隊基本資料維護</span>
-            <span class="arrow">➔</span>
-        </a>
+        <div class="group-box" style="border-style: solid; border-color: #333;">
+            <span class="group-title" style="color: #666;">球隊與成員管理</span>
 
-        <a href="yasin-player-reg.html" class="menu-btn">
-            <span class="btn-icon">👥</span>
-            <span class="btn-text">大會球員登錄審核</span>
-            <span class="arrow">➔</span>
-        </a>
+            <a href="yasin-team-base.html" class="menu-btn">
+                <span class="btn-icon">⚾</span>
+                <span class="btn-text">參賽球隊基本資料維護</span>
+                <span class="arrow">➔</span>
+            </a>
+
+            <a href="yasin-player-reg.html" class="menu-btn">
+                <span class="btn-icon">👤</span>
+                <span class="btn-text">大會球員登錄審核</span>
+                <span class="arrow">➔</span>
+            </a>
+
+            <a href="yasin-roster-mgt.html" class="menu-btn">
+                <span class="btn-icon">📜</span>
+                <span class="btn-text">各校隊伍 40 人名單異動</span>
+                <span class="arrow">➔</span>
+            </a>
+        </div>
+
+        <div class="group-box" style="border-style: solid; border-color: #333;">
+            <span class="group-title" style="color: #666;">賽期與常規賽事紀錄</span>
+
+            <a href="yasin-seasons-mgt.html" class="menu-btn">
+                <span class="btn-icon">📅</span>
+                <span class="btn-text">季度賽事與主辦場地分配</span>
+                <span class="arrow">➔</span>
+            </a>
+
+            <a href="yasin-games-mgt.html" class="menu-btn">
+                <span class="btn-icon">⚔️</span>
+                <span class="btn-text">例行賽與明星賽賽程維護</span>
+                <span class="arrow">➔</span>
+            </a>
+
+            <a href="yasin-game-logs.html" class="menu-btn">
+                <span class="btn-icon">📝</span>
+                <span class="btn-text">即時比賽紀錄錄入 (場、局、席)</span>
+                <span class="arrow">➔</span>
+            </a>
+
+            <a href="yasin-ranking-board.html" class="menu-btn">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">大會戰績排名與數據統計看板</span>
+                <span class="arrow">➔</span>
+            </a>
+        </div>
 
     </div>
 </div>
